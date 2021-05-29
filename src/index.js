@@ -48,7 +48,7 @@ window.addEventListener("load", ()=>{
 
 function play() {
   const sTime = new Date();
-  const isIOS = /[ \(]iP/.test(navigator.userAgent) || /Max OS/.test(navigator.userAgent);
+  const isIOS = /[ \(]iP/.test(navigator.userAgent) || /Mac OS/.test(navigator.userAgent);
 //  Tone.Transport.pause();
 //  Tone.Transport.stop();
   Tone.Transport.cancel();
