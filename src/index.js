@@ -48,7 +48,7 @@ window.addEventListener("load", ()=>{
 
 function play() {
   const sTime = new Date();
-  const isIOS = /[ \(]iP/.test(navigator.userAgent);
+  const isIOS = /[ \(]iP/.test(navigator.userAgent) || /Max OS/.test(navigator.userAgent);
 //  Tone.Transport.pause();
 //  Tone.Transport.stop();
   Tone.Transport.cancel();
@@ -110,5 +110,5 @@ function play() {
   playCount++;
   const eTime = new Date();
   lastPlayTime = eTime;
-  outputArea.innerHTML = navigator.userAgent + " " + playCount + " " + (eTime.getTime() - sTime.getTime()) + "msec";
+  outputArea.innerHTML = (isIOS ? "iOS " : "") + playCount + " " + (eTime.getTime() - sTime.getTime()) + "msec";
 }
