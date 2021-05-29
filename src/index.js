@@ -1,7 +1,9 @@
 import * as Tone from 'tone'
 
+var lastPlayTime, outputArea, textarea1, textarea2, textarea3, textarea4, textarea5, textarea6, textarea7, textarea8, textarea9, textarea10, textarea11, textarea12, textarea13;
+
 window.addEventListener("load", ()=>{
-  let outputArea = document.getElementById('output');
+  outputArea = document.getElementById('output');
   outputArea.innerHTML = 'load start...';
 
   const button = document.querySelector('button');
@@ -13,38 +15,38 @@ window.addEventListener("load", ()=>{
     play();
   };
 
-  let textarea1 = document.querySelector('#textarea1');
+  textarea1 = document.querySelector('#textarea1');
   textarea1.addEventListener('input', play);
-  let textarea2 = document.querySelector('#textarea2');
+  textarea2 = document.querySelector('#textarea2');
   textarea2.addEventListener('input', play);
-  let textarea3 = document.querySelector('#textarea3');
+  textarea3 = document.querySelector('#textarea3');
   textarea3.addEventListener('input', play);
-  let textarea4 = document.querySelector('#textarea4');
+  textarea4 = document.querySelector('#textarea4');
   textarea4.addEventListener('input', play);
-  let textarea5 = document.querySelector('#textarea5');
+  textarea5 = document.querySelector('#textarea5');
   textarea5.addEventListener('input', play);
-  let textarea6 = document.querySelector('#textarea6');
+  textarea6 = document.querySelector('#textarea6');
   textarea6.addEventListener('input', play);
-  let textarea7 = document.querySelector('#textarea7');
+  textarea7 = document.querySelector('#textarea7');
   textarea7.addEventListener('input', play);
-  let textarea8 = document.querySelector('#textarea8');
+  textarea8 = document.querySelector('#textarea8');
   textarea8.addEventListener('input', play);
-  let textarea9 = document.querySelector('#textarea9');
+  textarea9 = document.querySelector('#textarea9');
   textarea9.addEventListener('input', play);
-
-  let textarea10 = document.querySelector('#textarea10');
+  textarea10 = document.querySelector('#textarea10');
   textarea10.addEventListener('input', play);
-  let textarea11 = document.querySelector('#textarea11');
+  textarea11 = document.querySelector('#textarea11');
   textarea11.addEventListener('input', play);
-  let textarea12 = document.querySelector('#textarea12');
+  textarea12 = document.querySelector('#textarea12');
   textarea12.addEventListener('input', play);
-  let textarea13 = document.querySelector('#textarea13');
+  textarea13 = document.querySelector('#textarea13');
   textarea13.addEventListener('input', play);
 
   outputArea.innerHTML = 'click to play';
 });
 
 function play() {
+  const sTime = new Date();
   Tone.Transport.cancel();
   Tone.Transport.stop();
 
@@ -92,4 +94,8 @@ function play() {
   synth4.toDestination();
 
   Tone.Transport.start();
+
+  const eTime = new Date();
+  lastPlayTime = eTime;
+  outputArea.innerHTML = eTime.getTime() - sTime.getTime() + "msec";
 }
