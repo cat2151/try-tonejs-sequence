@@ -48,75 +48,81 @@ window.addEventListener("load", ()=>{
 });
 
 function play() {
-  playCount1++;
-  const sTime = new Date();
+  try {
+    playCount1++;
+    const sTime = new Date();
 
-  if (seq1) seq1.dispose();
-  if (seq2) seq2.dispose();
-  if (seq3) seq3.dispose();
-  if (seq4) seq4.dispose();
-  if (pingPong) pingPong.dispose();
-  if (synth1) synth1.dispose();
-  if (synth2) synth2.dispose();
-  if (synth3) synth3.dispose();
-  if (synth4) synth4.dispose();
+    outputArea.innerHTML = 'at dispose';
+    if (seq1) seq1.dispose();
+    if (seq2) seq2.dispose();
+    if (seq3) seq3.dispose();
+    if (seq4) seq4.dispose();
+    if (pingPong) pingPong.dispose();
+    if (synth1) synth1.dispose();
+    if (synth2) synth2.dispose();
+    if (synth3) synth3.dispose();
+    if (synth4) synth4.dispose();
 
-  const toneParam     = parseJsonAndDispErrorMessage("{" + textarea3.value + "}", "toneParam");
-  const duration      = textarea4.value;
-  const notes1        = parseJsonAndDispErrorMessage("[" + textarea1.value + "]", "notes");
-  const notes2        = parseJsonAndDispErrorMessage("[" + textarea2.value + "]", "notes");
-  const notes3        = parseJsonAndDispErrorMessage("[" + textarea8.value + "]", "notes");
-  const notes4        = parseJsonAndDispErrorMessage("[" + textarea9.value + "]", "notes");
-  const volume1       = textarea10.value;
-  const volume2       = textarea11.value;
-  const volume3       = textarea12.value;
-  const volume4       = textarea13.value;
-  const delayTime     = textarea5.value;
-  const delayFeedback = textarea6.value;
-  const delayWet      = textarea7.value;
-  if (toneParam == -1 || notes1 == -1 || notes2 == -1 || notes3 == -1 || notes4 == -1) return;
+    const toneParam     = parseJsonAndDispErrorMessage("{" + textarea3.value + "}", "toneParam");
+    const duration      = textarea4.value;
+    const notes1        = parseJsonAndDispErrorMessage("[" + textarea1.value + "]", "notes");
+    const notes2        = parseJsonAndDispErrorMessage("[" + textarea2.value + "]", "notes");
+    const notes3        = parseJsonAndDispErrorMessage("[" + textarea8.value + "]", "notes");
+    const notes4        = parseJsonAndDispErrorMessage("[" + textarea9.value + "]", "notes");
+    const volume1       = textarea10.value;
+    const volume2       = textarea11.value;
+    const volume3       = textarea12.value;
+    const volume4       = textarea13.value;
+    const delayTime     = textarea5.value;
+    const delayFeedback = textarea6.value;
+    const delayWet      = textarea7.value;
+    if (toneParam == -1 || notes1 == -1 || notes2 == -1 || notes3 == -1 || notes4 == -1) return;
 
-  outputArea.innerHTML = 'before synth';
-  synth1 = newFMSynthAndDispErrorMessage(toneParam);
-  synth2 = newFMSynthAndDispErrorMessage(toneParam);
-  synth3 = newFMSynthAndDispErrorMessage(toneParam);
-  synth4 = newFMSynthAndDispErrorMessage(toneParam);
-  if (!synth1 || !synth2 || !synth3 || !synth4) return;
-  synth1.volume.value = volume1;
-  synth2.volume.value = volume2;
-  synth3.volume.value = volume3;
-  synth4.volume.value = volume4;
+    outputArea.innerHTML = 'at synth';
+    synth1 = newFMSynthAndDispErrorMessage(toneParam);
+    synth2 = newFMSynthAndDispErrorMessage(toneParam);
+    synth3 = newFMSynthAndDispErrorMessage(toneParam);
+    synth4 = newFMSynthAndDispErrorMessage(toneParam);
+    if (!synth1 || !synth2 || !synth3 || !synth4) return;
+    synth1.volume.value = volume1;
+    synth2.volume.value = volume2;
+    synth3.volume.value = volume3;
+    synth4.volume.value = volume4;
 
-  outputArea.innerHTML = 'before seq';
-  seq1 = new Tone.Sequence((time, note) => {
-    synth1.triggerAttackRelease(note, duration, time);
-  }, notes1).start(0);
-  seq2 = new Tone.Sequence((time, note) => {
-    synth2.triggerAttackRelease(note, duration, time);
-  }, notes2).start(0);
-  seq3 = new Tone.Sequence((time, note) => {
-    synth3.triggerAttackRelease(note, duration, time);
-  }, notes3).start(0);
-  seq4 = new Tone.Sequence((time, note) => {
-    synth4.triggerAttackRelease(note, duration, time);
-  }, notes4).start(0);
+    outputArea.innerHTML = 'at seq';
+    seq1 = new Tone.Sequence((time, note) => {
+      synth1.triggerAttackRelease(note, duration, time);
+    }, notes1).start(0);
+    seq2 = new Tone.Sequence((time, note) => {
+      synth2.triggerAttackRelease(note, duration, time);
+    }, notes2).start(0);
+    seq3 = new Tone.Sequence((time, note) => {
+      synth3.triggerAttackRelease(note, duration, time);
+    }, notes3).start(0);
+    seq4 = new Tone.Sequence((time, note) => {
+      synth4.triggerAttackRelease(note, duration, time);
+    }, notes4).start(0);
 
-  outputArea.innerHTML = 'before pingPong';
-  pingPong = newPingPongDelayAndDispErrorMessage(delayTime, delayFeedback);
-  if (!pingPong) return;
-  if (!isOkDelayWetAndDispErrorMessage(delayWet)) return;
-  synth1.connect(pingPong);
-  synth2.connect(pingPong);
-  pingPong.toDestination();
-  synth3.toDestination();
-  synth4.toDestination();
+    outputArea.innerHTML = 'at pingPong';
+    pingPong = newPingPongDelayAndDispErrorMessage(delayTime, delayFeedback);
+    if (!pingPong) return;
+    if (!isOkDelayWetAndDispErrorMessage(delayWet)) return;
+    synth1.connect(pingPong);
+    synth2.connect(pingPong);
+    pingPong.toDestination();
+    synth3.toDestination();
+    synth4.toDestination();
 
-  Tone.Transport.start();
+    outputArea.innerHTML = 'at start';
+    Tone.Transport.start();
 
-  playCount2++;
-  const eTime = new Date();
-  lastPlayTime = eTime;
-  outputArea.innerHTML = getPlayCountStr() + (eTime.getTime() - sTime.getTime()) + "msec";
+    playCount2++;
+    const eTime = new Date();
+    lastPlayTime = eTime;
+    outputArea.innerHTML = getPlayCountStr() + (eTime.getTime() - sTime.getTime()) + "msec";
+  } catch (error) {
+    outputArea.innerHTML = getPlayCountStr() + outputArea.innerHTML + ' : play : error : ' + error;
+  }
 }
 
 function parseJsonAndDispErrorMessage(str, strName) {
