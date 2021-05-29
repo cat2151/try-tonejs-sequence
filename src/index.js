@@ -110,5 +110,5 @@ function play() {
   playCount++;
   const eTime = new Date();
   lastPlayTime = eTime;
-  outputArea.innerHTML = playCount + " " + (eTime.getTime() - sTime.getTime()) + "msec";
+  outputArea.innerHTML = navigator.userAgent + " " + playCount + " " + (eTime.getTime() - sTime.getTime()) + "msec";
 }
