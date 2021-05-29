@@ -1,6 +1,6 @@
 import * as Tone from 'tone'
 
-var lastPlayTime, outputArea, textarea1, textarea2, textarea3, textarea4, textarea5, textarea6, textarea7, textarea8, textarea9, textarea10, textarea11, textarea12, textarea13;
+var playCount, lastPlayTime, outputArea, textarea1, textarea2, textarea3, textarea4, textarea5, textarea6, textarea7, textarea8, textarea9, textarea10, textarea11, textarea12, textarea13;
 
 window.addEventListener("load", ()=>{
   outputArea = document.getElementById('output');
@@ -42,18 +42,17 @@ window.addEventListener("load", ()=>{
   textarea13 = document.querySelector('#textarea13');
   textarea13.addEventListener('input', play);
 
+  playCount = 0;
   outputArea.innerHTML = 'click to play';
 });
 
 function play() {
   const sTime = new Date();
   const isIOS = /[ \(]iP/.test(navigator.userAgent);
-  if (isIOS) outputArea.innerHTML = 'before cancel';
+//  Tone.Transport.pause();
+//  Tone.Transport.stop();
   Tone.Transport.cancel();
-  if (isIOS) outputArea.innerHTML = 'before stop';
-  Tone.Transport.stop();
 
-  if (isIOS) outputArea.innerHTML = 'before get textarea';
   const toneParam     = JSON.parse("{" + textarea3.value + "}");
   const duration      = textarea4.value;
   const notes1        = JSON.parse("[" + textarea1.value + "]");
@@ -68,7 +67,6 @@ function play() {
   const delayFeedback = textarea6.value;
   const delayWet      = textarea7.value;
 
-  if (isIOS) outputArea.innerHTML = 'before FMSynth';
   const synth1 = new Tone.FMSynth(toneParam);
   const synth2 = new Tone.FMSynth(toneParam);
   const synth3 = new Tone.FMSynth(toneParam);
@@ -78,7 +76,6 @@ function play() {
   synth3.volume.value = volume3;
   synth4.volume.value = volume4;
 
-  if (isIOS) outputArea.innerHTML = 'before Sequence';
   const seq1 = new Tone.Sequence((time, note) => {
     synth1.triggerAttackRelease(note, duration, time);
   }, notes1).start(0);
@@ -93,17 +90,25 @@ function play() {
   }, notes4).start(0);
 
   if (isIOS) outputArea.innerHTML = 'before PingPongDelay';
-  const pingPong = new Tone.PingPongDelay(delayTime, delayFeedback).toDestination();
-  pingPong.wet.value = delayWet;
-  synth1.connect(pingPong);
-  synth2.connect(pingPong);
-  synth3.toDestination();
-  synth4.toDestination();
+  if (isIOS) {
+    synth1.toDestination();
+    synth2.toDestination();
+    synth3.toDestination();
+    synth4.toDestination();
+  } else {
+    const pingPong = new Tone.PingPongDelay(delayTime, delayFeedback).toDestination();
+    pingPong.wet.value = delayWet;
+    synth1.connect(pingPong);
+    synth2.connect(pingPong);
+    synth3.toDestination();
+    synth4.toDestination();
+  }
 
   if (isIOS) outputArea.innerHTML = 'before start';
   Tone.Transport.start();
 
+  playCount++;
   const eTime = new Date();
   lastPlayTime = eTime;
-  outputArea.innerHTML = eTime.getTime() - sTime.getTime() + "msec";
+  outputArea.innerHTML = playCount + " " + (eTime.getTime() - sTime.getTime()) + "msec";
 }
