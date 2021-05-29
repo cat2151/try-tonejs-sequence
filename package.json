@@ -1,0 +1,30 @@
+{
+  "name": "try-tonejs-sequence",
+  "version": "1.0.0",
+  "description": "Tone.jsのsequenceを試しに使ってみる",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --mode=production",
+    "dev": "webpack-dev-server --hot --open --content-base dist/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cat2151/try-tonejs-sequence.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cat2151/try-tonejs-sequence/issues"
+  },
+  "homepage": "https://github.com/cat2151/try-tonejs-sequence#readme",
+  "devDependencies": {
+    "webpack": "^5.38.1",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.2"
+  },
+  "dependencies": {
+    "tone": "^14.7.77"
+  }
+}
