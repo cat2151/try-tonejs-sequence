@@ -1,6 +1,6 @@
 import * as Tone from 'tone'
 
-var playCount, lastPlayTime, outputArea, textarea1, textarea2, textarea3, textarea4, textarea5, textarea6, textarea7, textarea8, textarea9, textarea10, textarea11, textarea12, textarea13;
+var playCount, lastPlayTime, outputArea, textarea1, textarea2, textarea3, textarea4, textarea5, textarea6, textarea7, textarea8, textarea9, textarea10, textarea11, textarea12, textarea13, synth1, synth2, synth3, synth4, seq1, seq2, seq3, seq4, pingPong;
 
 window.addEventListener("load", ()=>{
   outputArea = document.getElementById('output');
@@ -48,10 +48,16 @@ window.addEventListener("load", ()=>{
 
 function play() {
   const sTime = new Date();
-  const isIOS = /[ \(]iP/.test(navigator.userAgent) || /Mac OS/.test(navigator.userAgent);
-//  Tone.Transport.pause();
-//  Tone.Transport.stop();
-  Tone.Transport.cancel();
+
+  if (synth1) synth1.dispose();
+  if (synth2) synth2.dispose();
+  if (synth2) synth3.dispose();
+  if (synth2) synth4.dispose();
+  if (seq1) seq1.dispose();
+  if (seq2) seq2.dispose();
+  if (seq3) seq3.dispose();
+  if (seq4) seq4.dispose();
+  if (pingPong) pingPong.dispose();
 
   const toneParam     = JSON.parse("{" + textarea3.value + "}");
   const duration      = textarea4.value;
@@ -67,48 +73,39 @@ function play() {
   const delayFeedback = textarea6.value;
   const delayWet      = textarea7.value;
 
-  const synth1 = new Tone.FMSynth(toneParam);
-  const synth2 = new Tone.FMSynth(toneParam);
-  const synth3 = new Tone.FMSynth(toneParam);
-  const synth4 = new Tone.FMSynth(toneParam);
+  synth1 = new Tone.FMSynth(toneParam);
+  synth2 = new Tone.FMSynth(toneParam);
+  synth3 = new Tone.FMSynth(toneParam);
+  synth4 = new Tone.FMSynth(toneParam);
   synth1.volume.value = volume1;
   synth2.volume.value = volume2;
   synth3.volume.value = volume3;
   synth4.volume.value = volume4;
 
-  const seq1 = new Tone.Sequence((time, note) => {
+  seq1 = new Tone.Sequence((time, note) => {
     synth1.triggerAttackRelease(note, duration, time);
   }, notes1).start(0);
-  const seq2 = new Tone.Sequence((time, note) => {
+  seq2 = new Tone.Sequence((time, note) => {
     synth2.triggerAttackRelease(note, duration, time);
   }, notes2).start(0);
-  const seq3 = new Tone.Sequence((time, note) => {
+  seq3 = new Tone.Sequence((time, note) => {
     synth3.triggerAttackRelease(note, duration, time);
   }, notes3).start(0);
-  const seq4 = new Tone.Sequence((time, note) => {
+  seq4 = new Tone.Sequence((time, note) => {
     synth4.triggerAttackRelease(note, duration, time);
   }, notes4).start(0);
 
-  if (isIOS) outputArea.innerHTML = 'before PingPongDelay';
-  if (isIOS && playCount) { // iPadで2回目playの進行不能を防止する用
-    synth1.toDestination();
-    synth2.toDestination();
-    synth3.toDestination();
-    synth4.toDestination();
-  } else {
-    const pingPong = new Tone.PingPongDelay(delayTime, delayFeedback).toDestination();
-    pingPong.wet.value = delayWet;
-    synth1.connect(pingPong);
-    synth2.connect(pingPong);
-    synth3.toDestination();
-    synth4.toDestination();
-  }
+  pingPong = new Tone.PingPongDelay(delayTime, delayFeedback).toDestination();
+  pingPong.wet.value = delayWet;
+  synth1.connect(pingPong);
+  synth2.connect(pingPong);
+  synth3.toDestination();
+  synth4.toDestination();
 
-  if (isIOS) outputArea.innerHTML = 'before start';
   Tone.Transport.start();
 
   playCount++;
   const eTime = new Date();
   lastPlayTime = eTime;
-  outputArea.innerHTML = (isIOS ? "iOS " : "") + playCount + " " + (eTime.getTime() - sTime.getTime()) + "msec";
+  outputArea.innerHTML = playCount + " " + (eTime.getTime() - sTime.getTime()) + "msec";
 }
