@@ -90,7 +90,7 @@ function play() {
   }, notes4).start(0);
 
   if (isIOS) outputArea.innerHTML = 'before PingPongDelay';
-  if (isIOS) {
+  if (isIOS && playCount) { // iPadで2回目playの進行不能を防止する用
     synth1.toDestination();
     synth2.toDestination();
     synth3.toDestination();
