@@ -49,15 +49,17 @@ window.addEventListener("load", ()=>{
 function play() {
   const sTime = new Date();
 
-  if (synth1) synth1.dispose();
-  if (synth2) synth2.dispose();
-  if (synth2) synth3.dispose();
-  if (synth2) synth4.dispose();
   if (seq1) seq1.dispose();
   if (seq2) seq2.dispose();
   if (seq3) seq3.dispose();
   if (seq4) seq4.dispose();
+  if (synth1) synth1.disconnect(pingPong);
+  if (synth2) synth2.disconnect(pingPong);
   if (pingPong) pingPong.dispose();
+  if (synth1) synth1.dispose();
+  if (synth2) synth2.dispose();
+  if (synth2) synth3.dispose();
+  if (synth2) synth4.dispose();
 
   const toneParam     = JSON.parse("{" + textarea3.value + "}");
   const duration      = textarea4.value;
@@ -107,5 +109,5 @@ function play() {
   playCount++;
   const eTime = new Date();
   lastPlayTime = eTime;
-  outputArea.innerHTML = playCount + " " + (eTime.getTime() - sTime.getTime()) + "msec";
+  outputArea.innerHTML = "a " + playCount + " " + (eTime.getTime() - sTime.getTime()) + "msec";
 }
