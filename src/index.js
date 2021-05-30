@@ -1,6 +1,6 @@
 import * as Tone from 'tone'
 
-var outputArea, textarea1, textarea2, textarea3, textarea4, textarea5, textarea6, textarea7, textarea8, textarea9, textarea10, textarea11, textarea12, textarea13, synth1, synth2, synth3, synth4, seq1, seq2, seq3, seq4, pingPong, disposeList = [];
+var outputArea, textarea1, textarea2, textarea3, textarea4, textarea5, textarea6, textarea7, textarea8, textarea9, textarea10, textarea11, textarea12, textarea13, synth1, synth2, synth3, synth4, seq1, seq2, seq3, seq4, pingPong, disposeList = [], errorPoint;
 
 window.addEventListener("load", ()=>{
   outputArea = document.getElementById('output');
@@ -8,8 +8,10 @@ window.addEventListener("load", ()=>{
 
   const button = document.querySelector('button');
   button.onclick = async ()=>{
-    await Tone.start();
-    outputArea.innerHTML = 'audio is ready';
+    if (!disposeList.length) {
+      await Tone.start();
+      outputArea.innerHTML = 'audio is ready';
+    }
     play();
   };
 
@@ -47,7 +49,7 @@ function play() {
   try {
     const sTime = new Date();
 
-    outputArea.innerHTML = 'at parse JSON';
+    errorPoint = 'at parse JSON'; // エラー場所判別用
     const toneParam     = JSON.parse("{" + textarea3.value + "}", "toneParam");
     const duration      = textarea4.value;
     const notes1        = JSON.parse("[" + textarea1.value + "]", "notes");
@@ -62,13 +64,13 @@ function play() {
     const delayFeedback = textarea6.value;
     const delayWet      = textarea7.value;
 
-    outputArea.innerHTML = 'at dispose';
+    errorPoint = 'at dispose';
     if (disposeList.length) { // 備忘。ここで演奏が止まる。なおこれ以降も文字列入力エラーによるexceptionが発生しうる。PingPongDelayのwet等。先に文字列チェックはしない。シンプル優先。
       disposeList.forEach(element => element.dispose());
       disposeList = [];
     }
 
-    outputArea.innerHTML = 'at synth';
+    errorPoint = 'at synth';  // エラー場所判別用
     synth1 = new Tone.FMSynth(toneParam);
     synth2 = new Tone.FMSynth(toneParam);
     synth3 = new Tone.FMSynth(toneParam);
@@ -79,7 +81,7 @@ function play() {
     synth3.volume.value = volume3;
     synth4.volume.value = volume4;
 
-    outputArea.innerHTML = 'at seq';
+    errorPoint = 'at seq';  // エラー場所判別用
     seq1 = new Tone.Sequence((time, note) => {
       synth1.triggerAttackRelease(note, duration, time);
     }, notes1).start(0);
@@ -94,28 +96,33 @@ function play() {
     }, notes4).start(0);
     disposeList.push(seq1, seq2, seq3, seq4);
 
-    outputArea.innerHTML = 'at pingPong';
-    pingPong = new Tone.PingPongDelay(delayTime, delayFeedback);
+    errorPoint = 'at pingPong';
+    pingPong = null;
+    try {
+      pingPong = new Tone.PingPongDelay(delayTime, delayFeedback);
+    } catch (error) { // 14.7.77 + iPad でPingPongDelayが2回目でexceptionになる問題の対策用
+      console.log(errorPoint + ' : error : ' + error);
+    }
     if (pingPong) {
       disposeList.push(pingPong);
-      outputArea.innerHTML = 'at pingPong wet';
+      errorPoint = 'at pingPong wet'; // エラー場所判別用
       pingPong.wet.value = delayWet;
       synth1.connect(pingPong);
       synth2.connect(pingPong);
       pingPong.toDestination();
-    } else {  // 用途。14.7.77 + iPad でPingPongDelayが2回目でexceptionになる問題の対策用。
+    } else {  // 14.7.77 + iPad でPingPongDelayが2回目でexceptionになる問題の対策用
       synth1.toDestination();
       synth2.toDestination();
     }
     synth3.toDestination();
     synth4.toDestination();
 
-    outputArea.innerHTML = 'at start';
+    errorPoint = 'at start';
     Tone.Transport.start();
 
     const eTime = new Date();
     outputArea.innerHTML = (eTime.getTime() - sTime.getTime()) + "msec";
-  } catch (error) { // 用途。入力が原因の各種エラー（JSON、new、property更新）のとき、入力を修正したら再度演奏できるようにする用。
-    outputArea.innerHTML = outputArea.innerHTML + ' : error : ' + error;
+  } catch (error) { // 入力が原因の各種エラー（JSON、new、property更新）のとき、入力を修正したら再度演奏できるようにする用
+    outputArea.innerHTML = errorPoint + ' : error : ' + error;
   }
 }
