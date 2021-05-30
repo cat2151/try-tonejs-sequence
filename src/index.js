@@ -1,6 +1,6 @@
 import * as Tone from 'tone'
 
-var playCount1, playCount2, lastPlayTime, outputArea, textarea1, textarea2, textarea3, textarea4, textarea5, textarea6, textarea7, textarea8, textarea9, textarea10, textarea11, textarea12, textarea13, synth1, synth2, synth3, synth4, seq1, seq2, seq3, seq4, pingPong;
+var outputArea, textarea1, textarea2, textarea3, textarea4, textarea5, textarea6, textarea7, textarea8, textarea9, textarea10, textarea11, textarea12, textarea13, synth1, synth2, synth3, synth4, seq1, seq2, seq3, seq4, pingPong, disposeList = [];
 
 window.addEventListener("load", ()=>{
   outputArea = document.getElementById('output');
@@ -8,10 +8,8 @@ window.addEventListener("load", ()=>{
 
   const button = document.querySelector('button');
   button.onclick = async ()=>{
-    if (!playCount2) {
-      await Tone.start();
-      outputArea.innerHTML = 'audio is ready';
-    }
+    await Tone.start();
+    outputArea.innerHTML = 'audio is ready';
     play();
   };
 
@@ -42,33 +40,20 @@ window.addEventListener("load", ()=>{
   textarea13 = document.querySelector('#textarea13');
   textarea13.addEventListener('input', play);
 
-  playCount1 = 0;
-  playCount2 = 0;
   outputArea.innerHTML = 'click to play';
 });
 
 function play() {
   try {
-    playCount1++;
     const sTime = new Date();
 
-    outputArea.innerHTML = 'at dispose';
-    if (seq1) seq1.dispose();
-    if (seq2) seq2.dispose();
-    if (seq3) seq3.dispose();
-    if (seq4) seq4.dispose();
-    if (pingPong) pingPong.dispose();
-    if (synth1) synth1.dispose();
-    if (synth2) synth2.dispose();
-    if (synth3) synth3.dispose();
-    if (synth4) synth4.dispose();
-
-    const toneParam     = parseJsonAndDispErrorMessage("{" + textarea3.value + "}", "toneParam");
+    outputArea.innerHTML = 'at parse JSON';
+    const toneParam     = JSON.parse("{" + textarea3.value + "}", "toneParam");
     const duration      = textarea4.value;
-    const notes1        = parseJsonAndDispErrorMessage("[" + textarea1.value + "]", "notes");
-    const notes2        = parseJsonAndDispErrorMessage("[" + textarea2.value + "]", "notes");
-    const notes3        = parseJsonAndDispErrorMessage("[" + textarea8.value + "]", "notes");
-    const notes4        = parseJsonAndDispErrorMessage("[" + textarea9.value + "]", "notes");
+    const notes1        = JSON.parse("[" + textarea1.value + "]", "notes");
+    const notes2        = JSON.parse("[" + textarea2.value + "]", "notes");
+    const notes3        = JSON.parse("[" + textarea8.value + "]", "notes");
+    const notes4        = JSON.parse("[" + textarea9.value + "]", "notes");
     const volume1       = textarea10.value;
     const volume2       = textarea11.value;
     const volume3       = textarea12.value;
@@ -76,14 +61,19 @@ function play() {
     const delayTime     = textarea5.value;
     const delayFeedback = textarea6.value;
     const delayWet      = textarea7.value;
-    if (toneParam == -1 || notes1 == -1 || notes2 == -1 || notes3 == -1 || notes4 == -1) return;
+
+    outputArea.innerHTML = 'at dispose';
+    if (disposeList.length) { // 備忘。ここで演奏が止まる。なおこれ以降も文字列入力エラーによるexceptionが発生しうる。PingPongDelayのwet等。先に文字列チェックはしない。シンプル優先。
+      disposeList.forEach(element => element.dispose());
+      disposeList = [];
+    }
 
     outputArea.innerHTML = 'at synth';
-    synth1 = newFMSynthAndDispErrorMessage(toneParam);
-    synth2 = newFMSynthAndDispErrorMessage(toneParam);
-    synth3 = newFMSynthAndDispErrorMessage(toneParam);
-    synth4 = newFMSynthAndDispErrorMessage(toneParam);
-    if (!synth1 || !synth2 || !synth3 || !synth4) return;
+    synth1 = new Tone.FMSynth(toneParam);
+    synth2 = new Tone.FMSynth(toneParam);
+    synth3 = new Tone.FMSynth(toneParam);
+    synth4 = new Tone.FMSynth(toneParam);
+    disposeList.push(synth1, synth2, synth3, synth4);
     synth1.volume.value = volume1;
     synth2.volume.value = volume2;
     synth3.volume.value = volume3;
@@ -102,67 +92,30 @@ function play() {
     seq4 = new Tone.Sequence((time, note) => {
       synth4.triggerAttackRelease(note, duration, time);
     }, notes4).start(0);
+    disposeList.push(seq1, seq2, seq3, seq4);
 
     outputArea.innerHTML = 'at pingPong';
-    pingPong = newPingPongDelayAndDispErrorMessage(delayTime, delayFeedback);
-    if (!pingPong) return;
-    if (!isOkDelayWetAndDispErrorMessage(delayWet)) return;
-    synth1.connect(pingPong);
-    synth2.connect(pingPong);
-    pingPong.toDestination();
+    pingPong = new Tone.PingPongDelay(delayTime, delayFeedback);
+    if (pingPong) {
+      disposeList.push(pingPong);
+      outputArea.innerHTML = 'at pingPong wet';
+      pingPong.wet.value = delayWet;
+      synth1.connect(pingPong);
+      synth2.connect(pingPong);
+      pingPong.toDestination();
+    } else {  // 用途。14.7.77 + iPad でPingPongDelayが2回目でexceptionになる問題の対策用。
+      synth1.toDestination();
+      synth2.toDestination();
+    }
     synth3.toDestination();
     synth4.toDestination();
 
     outputArea.innerHTML = 'at start';
     Tone.Transport.start();
 
-    playCount2++;
     const eTime = new Date();
-    lastPlayTime = eTime;
-    outputArea.innerHTML = getPlayCountStr() + (eTime.getTime() - sTime.getTime()) + "msec";
-  } catch (error) {
-    outputArea.innerHTML = getPlayCountStr() + outputArea.innerHTML + ' : play : error : ' + error;
+    outputArea.innerHTML = (eTime.getTime() - sTime.getTime()) + "msec";
+  } catch (error) { // 用途。入力が原因の各種エラー（JSON、new、property更新）のとき、入力を修正したら再度演奏できるようにする用。
+    outputArea.innerHTML = outputArea.innerHTML + ' : error : ' + error;
   }
-}
-
-function parseJsonAndDispErrorMessage(str, strName) {
-  try {
-    return JSON.parse(str);
-  } catch (error) {
-    outputArea.innerHTML = getPlayCountStr() + strName + ' : JSON error : ' + error + "Strings : [" + str + "]";
-    return -1;
-  }
-}
-
-function newFMSynthAndDispErrorMessage(toneParam) {
-  try {
-    return new Tone.FMSynth(toneParam);
-  } catch (error) {
-    outputArea.innerHTML = getPlayCountStr() + 'FMSynth : error : ' + error + "Strings : [" + toneParam + "]";
-    return null;
-  }
-}
-
-function newPingPongDelayAndDispErrorMessage(delayTime, delayFeedback) {
-  try {
-    return new Tone.PingPongDelay(delayTime, delayFeedback);
-  } catch (error) {
-    outputArea.innerHTML = getPlayCountStr() + 'PingPongDelay : error : ' + error;
-    return null;
-  }
-}
-
-function isOkDelayWetAndDispErrorMessage(delayWet) {
-  try {
-    pingPong.wet.value = delayWet;
-    return true;
-  } catch (error) {
-    outputArea.innerHTML = getPlayCountStr() + 'delayWet : error : ' + error;
-    return false;
-  }
-}
-
-function getPlayCountStr() {
-//  return playCount1 + " " + playCount2 + " ";
-  return "";
 }
